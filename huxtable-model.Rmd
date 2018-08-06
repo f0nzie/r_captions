@@ -1,0 +1,91 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+library(knitr)
+library(tidyverse)
+library(broom) # tidies model objects
+
+
+```
+
+
+
+```{r}
+library(tidyverse)
+library(broom) # tidies model objects
+
+# Data set  with variation - (2 models)
+x <- rnorm(10)
+y <- rnorm(10)
+z <- rnorm(10)
+
+mod.A <- lm(y ~ x)
+mod.B <- lm(y ~ x+z)
+
+# Messy model output
+summary(mod.A)
+
+# Tidy approach
+# Use broom to easier extract model components
+# Three functions to learn - tidy, glance & augment
+# can use pipe %>% - pronounced 'then'
+
+# Model co-efficents
+tidy(mod.A) 
+
+# Alternatively write with magritter pipe
+mod.A %>% tidy
+
+# Model statistics
+mod.A %>% glance
+
+# Model data
+# same as head(augment(mod.A),3)
+mod.A %>% augment() %>% head(3)
+
+# Use these to extract and save into data frame objects.
+# Model names
+Mod.Compare <- data.frame(Mod.Name= c("mod.A", "mod.B"))
+# Bind with model stats extracted with glance
+Mod.Compare <- cbind(Mod.Compare,
+                data.frame(rbind(glance(mod.A),glance(mod.B))))
+# Compare models
+Mod.Compare
+
+# This Mod.Compare object form also makes it easier to publish in RMarkdown tables or write to a csv or Excel file. 
+
+# btw also helps with quick eda
+mod.A %>% augment() %>% ggplot(aes(x=.fitted,y=.resid ,colour=z)) + geom_point()
+```
+
+
+```{r}
+# Alternately use huxtable
+library(huxtable)
+
+# Make a hux object
+Mod.Compare.Hux <- as_huxtable(Mod.Compare)
+
+# simple output
+Mod.Compare.Hux
+
+```
+
+```{r}
+# Customise output with pipes.
+Mod.Compare.Hux %>%
+    set_caption('Model Comparison') %>% 
+    add_colnames() %>% 
+    set_all_borders(1) %>% 
+    # will create an alterante stripe
+    theme_striped(stripe = 'bisque1', header_col = FALSE,  header_row = FALSE) %>% 
+    set_background_color(1, 1:12,'lightblue') %>% 
+    set_background_color(2, 10,'lightgreen') %>%  #colour
+    set_align(value = "center")
+```
+

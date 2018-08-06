@@ -1,0 +1,53 @@
+---
+title: "Bare knitr"
+output:
+  pdf_document: 
+    fig_caption: true
+  html_notebook: default
+---
+
+```{r setup, include=FALSE, error=TRUE, message=FALSE, warning=FALSE} 
+knitr::opts_chunk$set(echo=TRUE, 
+                      comment=NA, 
+                      error=TRUE, 
+                      warning=FALSE, 
+                      message = FALSE, 
+                      results = "asis",
+                      fig.align = 'center')
+```
+
+
+```{r}
+library(ggplot2)
+```
+
+
+Refer to Fig. \@ref(fig:fig-margin).
+
+
+```{r fig-margin,  fig.cap = "MPG vs horsepower, colored by transmission."}
+
+mtcars2 <- mtcars
+mtcars2$am <- factor(
+  mtcars$am, labels = c('automatic', 'manual')
+)
+ggplot(mtcars2, aes(hp, mpg, color = am)) +
+  geom_point() + geom_smooth() +
+  theme(legend.position = 'bottom')
+```
+
+Table \@ref(tab:subsetmtcars)
+
+
+```{r subsetmtcars}
+knitr::kable(
+  mtcars[1:6, 1:6], caption = 'A subset of mtcars.'
+)
+```
+
+
+
+```{r}
+
+```
+

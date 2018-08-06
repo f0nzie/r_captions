@@ -1,0 +1,45 @@
+---
+title: "02 Manual saved figures"
+output:
+  bookdown::pdf_document2:
+    keep_tex: yes
+    latex_engine: pdflatex
+    number_sections: no
+    toc: no
+  html_notebook: default
+linestretch: 1.0  
+---
+
+
+```{r setup, include=FALSE, error=TRUE, message=FALSE, warning=FALSE} 
+knitr::opts_chunk$set(echo = FALSE, 
+                      comment = NA, 
+                      error = TRUE, 
+                      warning = FALSE, 
+                      message = FALSE, 
+                      fig.align = 'center',
+                      results = "asis"
+                      )
+
+options(knitr.table.format = "html") 
+```
+
+```{r load_libraries, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+```
+
+
+A plot has been screenshot and saved as a `.png` file. Refer to Fig. \@ref(mymtcars2).
+
+
+## Manual figure
+
+![This is a manual figure from mtcars2](mtcars2.png){#mymtcars2}
+
+
+![Boxplot for diamonds by cut](diamonds_boxplot.png){#DiamondsBoxplot}
+
+
+A boxplot for cut vs. price in the diamonds dataset as shown in Fig. \@ref(DiamondsBoxplot).

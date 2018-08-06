@@ -1,0 +1,196 @@
+---
+title: "R Notebook"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+
+https://hughjonesd.github.io/huxtable/huxtable.html
+
+# Getting started
+A huxtable is a way of representing a table of text data in R. You already know that R can represent a table of data in a data frame. For example, if  mydata is a data frame, then mydata[1, 2] represents the the data in row 1, column 2, and mydata$start_time is all the data in the column called start_time.
+
+A huxtable is just a data frame with some extra properties. So, if myhux is a huxtable, then myhux[1, 2] represents the data in row 1 column 2, as before. But this cell will also have some other properties - for example, the font size of the text, or the colour of the cell border.
+
+To create a table with huxtable, use the function huxtable, or hux for short. This works very much like data.frame.
+
+```{r}
+library(huxtable)
+
+
+ht <- hux(
+        Employee = c('John Smith', 'Jane Doe', 'David Hugh-Jones'),
+        Salary = c(50000, 50000, 40000),
+        add_colnames = TRUE
+      )
+
+ht
+```
+
+
+
+```{r}
+
+bold(ht)[1,]           <- TRUE
+bottom_border(ht)[1,]  <- 2
+align(ht)[,2]          <- 'right'
+right_padding(ht)      <- 10
+left_padding(ht)       <- 10
+width(ht)              <- 0.35
+number_format(ht)      <- 2
+
+ht
+```
+
+```{r}
+tribble_hux(
+  ~Employee,          ~Salary,
+  "John Smith",       50000,
+  "Jane Doe",         50000,
+  "David Hugh-Jones", 40000,
+  add_colnames = TRUE
+)
+```
+
+```{r}
+print_screen(ht)     # on the R command line, you can just type "ht"
+
+```
+
+```{r}
+ht
+```
+
+```{r}
+right_padding(ht) <- 10
+left_padding(ht)  <- 10
+```
+
+
+```{r}
+number_format(ht) <- 2    # 2 decimal places
+```
+
+
+```{r}
+bold(ht)[1, ]          <- TRUE
+bottom_border(ht)[1, ] <- 1
+```
+
+```{r}
+ht
+```
+
+
+So far, all these properties have been set at cell level. Different cells can have different alignment, text formatting and so on. By contrast, caption is a table-level property. It only takes one value, which sets a table caption.
+
+```{r}
+caption(ht) <- 'Employee table'
+ht
+```
+
+
+
+# Tidyverse syntax
+If you prefer a tidyverse style of code, using the pipe operator %>%, then you can use set_* functions to set properties. These have the same name as the property, with set_ prepended. For example, to set the bold property, you use the set_bold function.
+
+set_* functions return the modified huxtable, so you can chain them together like this:
+
+```{r}
+library(dplyr)
+hux(
+        Employee     = c('John Smith', 'Jane Doe', 'David Hugh-Jones'), 
+        Salary       = c(50000, 50000, 40000),
+        add_colnames = TRUE
+      )                               %>%
+      set_right_padding(10)           %>%
+      set_left_padding(10)            %>% 
+      set_bold(1, 1:2, TRUE)          %>% 
+      set_bottom_border(1, 1:2, 1)    %>%
+      set_align(1:4, 2, 'right')      %>%
+      set_number_format(2)            %>% 
+      set_caption('Employee table')
+```
+
+
+## Getting properties
+```{r}
+italic(ht)
+```
+
+```{r}
+bottom_border(ht)[1:2,]
+```
+
+
+# Changing text in a huxtable
+
+```{r}
+ht[3, 1] <- 'Jane Jones'
+ht
+```
+
+
+```{r}
+ht_with_roles <- ht
+ht_with_roles$Role <- c("Role", "Admin", "CEO", "Dogsbody")
+ht_with_roles
+```
+
+```{r}
+ht_with_roles <- cbind(ht, c("Role", "Admin", "CEO", "Dogsbody"))
+ht_with_roles
+```
+
+```{r}
+rbind(ht, c("Yihui Xie", 100000))
+
+```
+
+
+```{r}
+rbind(ht, c("Yihui Xie", 100000), copy_cell_props = FALSE)
+
+```
+
+```{r}
+ht <- insert_row(ht, "Hadley Wickham", "100000", after = 3)
+ht <- add_footnote(ht, "DHJ deserves a pay rise")
+ht
+```
+
+
+# Automatic formatting
+By default, when you create a huxtable using huxtable or as_huxtable, the package will guess defaults for number formatting and alignment, based on the type of data in your columns. Numeric data will be right-aligned or aligned on the decimal point; character data will be left aligned; and the package will try to set sensible defaults for number formatting. If you want to, you can turn this off with autoformat = FALSE:
+
+
+```{r}
+my_data <- data.frame(
+        Employee           = c("John Smith", "Jane Doe", "David Hugh-Jones"), 
+        Salary             = c(50000L, 50000L, 40000L),
+        Performance_rating = c(8.9, 9.2, 7.8)  
+      )
+as_huxtable(my_data, add_colnames = TRUE) # with automatic formatting
+```
+
+```{r}
+as_huxtable(my_data, add_colnames = TRUE, autoformat = FALSE) # no automatic formatting
+
+```
+
+
+## Width and cell wrapping
+
+```{r}
+width(ht) <- 0.35
+col_width(ht) <- c(.7, .3)
+ht
+```
+
+```{r}
+ht_wrapped <- ht
+ht_wrapped[5, 1] <- "David Arthur Shrimpton Hugh-Jones"
+wrap(ht_wrapped) <- TRUE
+ht_wrapped
+```
+

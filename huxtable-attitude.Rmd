@@ -1,0 +1,42 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+https://hughjonesd.github.io/huxtable/huxtable.html
+
+```{r}
+library(huxtable)
+library(psych)
+library(magrittr)
+
+data(attitude)
+att_corr <- corr.test(as.matrix(attitude))
+att_corr
+```
+
+
+```{r}
+att_hux <- as_hux(att_corr$r)                                           %>% 
+      # selects cells with p < 0.05:
+      set_background_color(where(att_corr$p < 0.05), "yellow")          %>% 
+      # selects cells with p < 0.01:
+      set_background_color(where(att_corr$p < 0.01), "orange")          %>% 
+      set_text_color(where(row(att_corr$r) == col(att_corr$r)), "grey") 
+
+
+att_hux <- att_hux                                                      %>% 
+      huxtable::add_rownames()                                          %>% 
+      huxtable::add_colnames()                                          %>%
+      set_caption('Correlations in attitudes among 30 departments')     %>% 
+      set_bold(1, everywhere, TRUE)                                     %>% 
+      set_bold(everywhere, 1, TRUE)                                     %>% 
+      set_all_borders(1)                                                %>%
+      set_number_format(2)                                              %>% 
+      set_position('left')
+
+att_hux
+```
+
