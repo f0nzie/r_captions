@@ -1,0 +1,40 @@
+---
+title: "R Notebook"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+## pander
+```{r pander}
+n <- 100
+x <- rnorm(n)
+y <- 2*x + rnorm(n)
+out <- lm(y ~ x)
+
+library(pander)
+panderOptions("digits", 2)
+pander(out)
+```
+
+## xtable
+```{r xtable, results="asis"}
+n <- 100
+x <- rnorm(n)
+y <- 2*x + rnorm(n)
+out <- lm(y ~ x)
+library(xtable)
+tab <- xtable(summary(out)$coef, digits=c(0, 2, 2, 1, 2))
+print(tab, type="html")
+print(tab, type="html")
+```
+
+## kable
+```{r kable}
+n <- 100
+x <- rnorm(n)
+y <- 2*x + rnorm(n)
+out <- lm(y ~ x)
+library(knitr)
+kable(summary(out)$coef, digits=2)
+```

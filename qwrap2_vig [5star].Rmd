@@ -1,0 +1,312 @@
+---
+title: "R Notebook"
+output:
+  bookdown::pdf_document2:
+    keep_tex: yes
+    latex_engine: pdflatex
+    number_sections: no
+    toc: yes
+  html_notebook: default
+---
+
+```{r setup, include=FALSE, error=TRUE, message=FALSE, warning=FALSE} 
+knitr::opts_chunk$set(echo=TRUE, 
+                      comment=NA, 
+                      error=TRUE, 
+                      warning=FALSE, 
+                      message = FALSE, 
+                      results = "asis",
+                      fig.align = 'center')
+```
+
+https://cran.r-project.org/web/packages/qwraps2/vignettes/summary-statistics.html
+
+```{r}
+set.seed(42)
+library(dplyr)
+## 
+## Attaching package: 'dplyr'
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+library(qwraps2)
+
+# define the markup language we are working in.
+# options(qwraps2_markup = "latex") is also supported.
+options(qwraps2_markup = "markdown")
+
+data(mtcars)
+
+mtcars2 <-
+  dplyr::mutate(mtcars,
+                cyl_factor = factor(cyl,
+                                    levels = c(6, 4, 8),
+                                    labels = paste(c(6, 4, 8), "cylinders")),
+                cyl_character = paste(cyl, "cylinders"))
+
+str(mtcars2)
+```
+
+```{r}
+with(mtcars2, table(cyl_factor, cyl_character))
+##              cyl_character
+## cyl_factor    4 cylinders 6 cylinders 8 cylinders
+##   6 cylinders           0           7           0
+##   4 cylinders          11           0           0
+##   8 cylinders           0           0          14
+with(mtcars2, all.equal(factor(cyl_character), cyl_factor))
+## [1] "Attributes: < Component \"levels\": 2 string mismatches >"
+```
+
+```{r}
+mean_sd(mtcars2$mpg)
+## [1] "20.09 &plusmn; 6.03"
+mean_sd(mtcars2$mpg, denote_sd = "paren")
+## [1] "20.09 (6.03)"
+```
+
+```{r}
+mci <- mean_ci(mtcars2$mpg)
+mci
+## [1] "20.09 (18.00, 22.18)"
+print(mci, show_level = TRUE)
+## [1] "20.09 (95% CI: 18.00, 22.18)"
+```
+
+```{r}
+median_iqr(mtcars2$mpg)
+## [1] "19.20 (15.43, 22.80)"
+```
+
+```{r}
+n_perc(mtcars2$cyl == 4)
+## [1] "11 (34.38%)"
+n_perc0(mtcars2$cyl == 4)
+## [1] "11 (34)"
+
+n_perc(mtcars2$cyl_factor == 4)  # this returns 0 (0.00%)
+## [1] "0 (0.00%)"
+n_perc(mtcars2$cyl_factor == "4 cylinders")
+## [1] "11 (34.38%)"
+n_perc(mtcars2$cyl_factor == levels(mtcars2$cyl_factor)[2])
+## [1] "11 (34.38%)"
+
+# The count and percentage of 4 or 6 cylinders vehicles in the data set is
+n_perc(mtcars2$cyl %in% c(4, 6))
+## [1] "18 (56.25%)"
+```
+
+```{r}
+x <- runif(6, min = 4, max = 70)
+
+# geometric mean
+mu_g <- prod(x) ** (1 / length(x))
+mu_g
+## [1] 46.50714
+exp(mean(log(x)))
+## [1] 46.50714
+1.2 ** mean(log(x, base = 1.2))
+## [1] 46.50714
+
+# geometric standard deviation
+exp(sd(log(x)))  ## This is wrong
+## [1] 1.500247
+
+# these equations are correct
+sigma_g <- exp(sqrt(sum(log(x / mu_g) ** 2) / length(x)))
+sigma_g
+## [1] 1.448151
+
+exp(sqrt((length(x) - 1) / length(x)) * sd(log(x)))
+## [1] 1.448151
+```
+
+# Building a Data Summary Table
+Objective: build a table reporting summary statistics for some of the variables in the mtcars2 data.frame overall and within subgroups. We’ll start with something very simple and build up to something bigger.
+
+Let’s report the min, max, and mean (sd) for continuous variables and n (%) for categorical variables. We will report mpg, disp, wt, and gear overall and by number of cylinders.
+
+The function summary_table, along with some dplyr functions will do the work for us. summary_table takes two arguments:
+
+.data a (grouped_df) data.frame
+summaries a list of summaries. This is a list-of-lists. The outer list defines the row groups and the inner lists define the specif summaries.
+
+## overall, mtcars2, oursummary1
+
+See Table \@ref(tab:ourSummary).
+
+```{r }
+our_summary1 <-
+  list("Miles Per Gallon" =
+       list("min" = ~ min(mpg),
+            "max" = ~ max(mpg),
+            "mean (sd)" = ~ qwraps2::mean_sd(mpg)),
+       "Displacement" =
+       list("min" = ~ min(disp),
+            "max" = ~ max(disp),
+            "mean (sd)" = ~ qwraps2::mean_sd(disp)),
+       "Weight (1000 lbs)" =
+       list("min" = ~ min(wt),
+            "max" = ~ max(wt),
+            "mean (sd)" = ~ qwraps2::mean_sd(wt)),
+       "Forward Gears" =
+       list("Three" = ~ qwraps2::n_perc0(gear == 3),
+            "Four"  = ~ qwraps2::n_perc0(gear == 4),
+            "Five"  = ~ qwraps2::n_perc0(gear == 5))
+       )
+
+```
+
+
+```{r ourSummary, results='asis'}
+### Overall
+summary_table(mtcars2, our_summary1)
+```
+
+Table: (\#tab:ourSummary) mtcars2. Our Summary #1
+
+
+## By number of cylinders
+See Table \@ref(tab:cylFactor).
+
+```{r cylFactor}
+### By number of Cylinders
+summary_table(dplyr::group_by(mtcars2, cyl_factor), our_summary1)
+```
+
+Table: (\#tab:cylFactor) mtcars2. By number of cylinders
+
+
+## Change column names
+If you want to change the column names, do so via the cnames argument to qable via the print method for `qwraps2_summary_table` objects. Any argument that you want to send to qable can be sent there when explicitly using the print method for `qwraps2_summary_table` objects.
+See Table \@ref(tab:changeColumnNames).
+
+```{r}
+print(summary_table(dplyr::group_by(mtcars2, cyl_factor), our_summary1),
+      rtitle = "Summary Statistics",
+      cnames = c("Col 1", "Col 2", "Col 3"))
+```
+
+Table: (\#tab:changeColumnNames) If you want to change the column names, do so via the `cnames` argument
+
+# Easy building of the summaries
+The task of building the summaries list-of-lists can be tedious. tab_summary is designed to make it easier. For numeric variables, tab_summary will provide the formulae for the min, median (iqr), mean (sd), and max. factor and  character vectors will have calls to qwraps2::n_perc for all levels provided.
+
+For version 0.2.3.9000 or beyond, arguments have been added to tab_summary to help control some of the formatting of counts and percentages. The original behavior of tab_summary used n_perc0 to format the summary of categorical variables. Now, n_perc is called and the end user can specify formatting options via a list passed via the n_perc_args argument. The default settings for tab_summary is below.
+
+
+```{r}
+args(tab_summary)
+```
+
+```{r}
+tab_summary(mtcars2$mpg)
+
+```
+
+
+```{r}
+tab_summary(mtcars2$gear) # gear is a numeric vector!
+
+```
+
+
+```{r}
+tab_summary(factor(mtcars2$gear))
+
+```
+
+The our_summary1 object can be recreated as follows. Some additional row groups are provided to show default behavior of tab_summary. Important: Note that the tab_summary are made while using with. Further explanation for this follows.
+See Table \@ref(tab:usingTabSummary).
+
+```{r}
+our_summary2 <-
+  with(mtcars2,
+       list("Miles Per Gallon" = tab_summary(mpg)[c(1, 4, 3)],
+            "Displacement (default summary)" = tab_summary(disp),
+            "Displacement" = c(tab_summary(disp)[c(1, 4, 3)],
+                               "mean (95% CI)" = ~ frmtci(qwraps2::mean_ci(disp))),
+            "Weight (1000 lbs)" = tab_summary(wt)[c(1, 4, 3)],
+            "Forward Gears" = tab_summary(as.character(gear))
+            ))
+```
+
+
+```{r}
+whole <- summary_table(mtcars2, our_summary2)
+whole
+```
+
+Table: (\#tab:usingTabSummary) A **whole** table. Note that the tab_summary are made while using `with()`
+
+
+## Group by multiple factors:
+See Table \@ref(tab:multipleFactors).
+
+```{r}
+grouped <- summary_table(dplyr::group_by(mtcars2, am, vs), our_summary2)
+grouped
+```
+
+Table: (\#tab:multipleFactors) A **grouped** table. Use `dplyr::group_by` to group by multiple factors
+
+## As one table:
+See Table \@ref(tab:oneTable) 
+
+```{r}
+both <- cbind(whole, grouped)
+both
+```
+
+Table: (\#tab:oneTable) A **one** table. Using `cbind` to bind two tables `whole` and `grouped`
+
+
+## Adding P-values to a Summary Table
+There are many, many different ways to format data summary tables. Adding p-values to a table is just one thing that can be done in more than one way. For example, if a row group reports the counts and percentages for each level of a categorical variable across multiple (column) groups, then I would argue that the p-value resulting from a chi square test or a Fisher exact test would be best placed on the line of the table labeling the row group. However, say we reported the minimum, median, mean, and maximum with in a row group for one variable. The p-value from a t-test, or other meaningful test, for the difference in mean I would suggest should be reported on the line of the summary table for the mean, not the row group itself.
+
+With so many possibilities I have reserved construction of a p-value column to be ad hoc. Perhaps an additional column wouldn’t be used and the p-values are edited into row group labels, for example.
+
+If you want to add a p-value column to a qwraps2_summary_table object you can with some degree of ease. Note that qwraps2_summary_table objects are just character matrices.
+
+See Table \@ref(tab:pValue).
+
+
+```{r}
+both %>% str
+```
+
+
+```{r}
+pvals <-
+  list(lm(mpg ~ am:vs,  data = mtcars2),
+       lm(disp ~ am:vs, data = mtcars2),
+       lm(disp ~ am:vs, data = mtcars2),  # yeah, silly example this is needed twice
+       lm(wt ~ am:vs,   data = mtcars2)) %>%
+  lapply(aov) %>%
+  lapply(summary) %>%
+  lapply(function(x) x[[1]][["Pr(>F)"]][1]) %>%
+  lapply(frmtp) %>%
+  do.call(c, .)
+pvals
+```
+
+Adding the p-value column is done as follows:
+
+```{r}
+both <- cbind(both, "P-value" = "")
+both[grepl("mean \\(sd\\)", rownames(both)), "P-value"] <- pvals
+```
+
+and the resulting table is:
+
+```{r}
+both
+```
+
+Table: (\#tab:pValue) There are many, many different ways to format data summary tables. Adding p-values to a table is just one thing that can be done in more than one way.
+
+
+

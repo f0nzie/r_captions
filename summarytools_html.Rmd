@@ -1,0 +1,50 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+https://cran.r-project.org/web/packages/summarytools/vignettes/Recommendations-rmarkdown.html
+
+```{r}
+library(summarytools)
+```
+
+## freq() : Frequency Tables
+
+
+```{r}
+print(freq(tobacco$gender), method = 'render')
+```
+
+## 2 - ctable() : Cross-Tabulations
+
+
+```{r}
+print(ctable(tobacco$gender, tobacco$smoker), method = 'render')
+
+```
+
+## 3 - descr() : Descriptive Univariate Stats
+
+```{r}
+print(descr(tobacco), method = 'render', table.classes = 'st-small')
+```
+
+
+## Transposing and selecting only the stats you need
+
+```{r}
+descr(iris, stats = c("mean", "sd", "min", "med", "max"), transpose = TRUE, 
+      omit.headings = TRUE, style = "rmarkdown")
+```
+
+
+## 4 - dfSummary() : Data Frame Summaries
+
+
+```{r}
+print(dfSummary(tobacco, graph.magnif = 0.75), method = 'render')
+```
+

@@ -1,0 +1,122 @@
+---
+title: "R Notebook"
+output:
+  bookdown::pdf_document2:
+    keep_tex: yes
+    latex_engine: pdflatex
+    number_sections: no
+    toc: yes
+---
+
+https://mran.revolutionanalytics.com/snapshot/2018-01-16/web/packages/summarytools/vignettes/Introduction.html
+
+
+```{r setup, include=FALSE, error=TRUE, message=FALSE, warning=FALSE} 
+knitr::opts_chunk$set(echo=TRUE, 
+                      comment=NA, 
+                      error=TRUE, 
+                      warning=FALSE, 
+                      message = FALSE, 
+                      results = "asis",
+                      fig.align = 'center')
+```
+
+
+```{r}
+library(summarytools)
+```
+
+
+
+```{r}
+data(tobacco) # tobacco is an example dataframe included in the package
+```
+
+
+
+## with, by, view
+
+Refer to Table \@ref(tab:usingBy)
+
+```{r usingBy}
+BMI_by_age <- with(tobacco, 
+                   by(BMI, age.gr, descr, 
+                      stats = c("mean", "sd", "min", "med", "max"), 
+                      caption = "(\\#tab:usingBy) Using by()"
+                      )
+                   )
+
+view(BMI_by_age, "pander", style = "rmarkdown",
+     caption = "(\\#tab:usingBy) Using by()",
+     omit.headings = TRUE)
+```
+
+Table: (\#tab:usingBy) Variable descriptive statistics. BMI by age.
+
+
+
+
+## freq
+See Table \@ref(tab:byGender)
+
+```{r byGender}
+freq(tobacco$gender, style="rmarkdown", 
+     caption = "(\\#tab:byGender) Tobacco by Gender", 
+     omit.headings = TRUE)
+```
+
+
+## Descriptive Statistics
+
+### descr() with caption inside
+See Table \@ref(tab:descrInside). It will not work.
+
+```{r descrInside}
+descr(tobacco, style = 'rmarkdown', 
+      # caption = "(\\#tab:descrInside) Tobacco by Gender", 
+      omit.headings = TRUE)
+```
+
+Table: (\#tab:descrInside) Tobacco by Gender
+
+
+
+### descr() with caption outside
+Refer to Table \@ref(tab:descrOutside).
+
+```{r descrOutside}
+descr(tobacco, style = 'rmarkdown', 
+      omit.headings = TRUE)
+```
+
+Table: (\#tab:descrOutside) Dataframe descriptive statistics
+
+
+## with(), by()
+Table \@ref(tab:withTobacco)
+
+```{r withTobacco}
+with(tobacco, view(by(diseased, smoker, freq), method = "pander", 
+                   # caption = "(\\#tab:withTobacco) Tobacco frequency by diseased, smoker",
+                   omit.headings = TRUE))
+```
+
+Table: (\#tab:withTobacco) Tobacco frequency by diseased, smoker
+
+
+## `Table` reference below chunk     
+Table \@ref(tab:withTobaccoLabelDown)
+
+```{r withTobaccoLabelDown}
+with(tobacco, view(by(diseased, smoker, freq), method = "pander", 
+                   omit.headings = TRUE))
+```
+
+Table: (\#tab:withTobaccoLabelDown) Tobacco. No smokers.
+
+
+
+   
+
+
+

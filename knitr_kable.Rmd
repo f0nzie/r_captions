@@ -1,0 +1,44 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document: default
+---
+
+https://blogs.uoregon.edu/rclub/2014/05/15/nice-tables-from-r-data-frames/
+
+
+```{r}
+
+#install.packages('knitr')
+require(knitr)
+
+#lets use the apropos Number of Breaks in Yarn during Weaving data
+data(warpbreaks)
+
+#check it out
+summary(warpbreaks)
+
+#Let's get the mean and SD for each level of wool
+# at each level of tension.
+
+#install.packages('plyr') # This is a great package
+require(plyr)
+
+#Split the data by wool and tension, get mean and sd for each
+# and return a data frame.
+descriptives<-ddply(.data=warpbreaks,
+.variables=c('wool','tension'),
+.fun=function(x){
+round(c(Mean=mean(x$breaks),SD=sd(x$breaks)),2)
+})
+descriptives
+
+#The default is markdown, and looks pretty good to copy and
+# past into a text file.
+kable(descriptives)
+
+myHTMLTable<-kable(descriptives,format='html',output=F) 
+getwd() #what directory will it save into? write(myHTMLTable,file='table.html') #Check out the html, and buff it up if you want! #Further reading: # ?kable # ?plyr # Also, google 'markdown' and 'pandoc' 
+```

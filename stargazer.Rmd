@@ -1,0 +1,36 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document: default
+---
+
+
+
+```{r}
+#install.packages("stargazer")
+library(stargazer)
+```
+To create a summary statistics table from the ‘attitude’ data frame (which should be available with your default installation of R), simply run the following:
+
+```{r results='asis'}
+stargazer(attitude)
+```
+
+
+```{r results='asis'}
+stargazer(attitude[1:4,], summary=FALSE, rownames=FALSE)
+```
+
+```{r results='asis'}
+library(iPower)
+
+data(surface_xy_coord_ext)
+
+stargazer(surface_xy_coord_ext, type = "latex", font.size = "small", header = FALSE, 
+          omit.summary.stat = c("p25", "p75"), 
+          summary.stat = c("n", "min", "max", "mean", "median"),
+          title="Summary Results")
+```
+

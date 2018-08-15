@@ -1,0 +1,183 @@
+---
+title: "R Notebook"
+output:
+  bookdown::pdf_document2:
+    keep_tex: yes
+    latex_engine: pdflatex
+    number_sections: no
+    toc: yes
+---
+
+https://mran.revolutionanalytics.com/snapshot/2018-01-16/web/packages/summarytools/vignettes/Introduction.html
+
+
+```{r setup, include=FALSE, error=TRUE, message=FALSE, warning=FALSE} 
+knitr::opts_chunk$set(echo=TRUE, 
+                      comment=NA, 
+                      error=TRUE, 
+                      warning=FALSE, 
+                      message = FALSE, 
+                      results = "asis",
+                      fig.align = 'center')
+```
+
+
+```{r}
+library(summarytools)
+```
+
+
+```{r}
+#st_options('omit.headings', TRUE)
+st_options('bootstrap.css', FALSE)
+st_options('footnote', NA)
+```
+
+```{r}
+names(tobacco)
+```
+
+## freq
+
+```{r}
+freq(tobacco$gender, style = 'rmarkdown', 
+     caption = "Tobacco by Gender")
+```
+
+## Cross-Tabulation
+
+
+```{r}
+ctable(tobacco$gender, tobacco$smoker, style = 'rmarkdown', 
+       caption = "Tobacco. Cross-Tabulation by Gender (rolling percentage)", 
+       omit.headings = TRUE)
+```
+
+### Descriptive Statistics
+See Table \@ref(tab:descrTobacco)
+
+```{r}
+descr(tobacco, style = 'rmarkdown', 
+      caption = "Tobacco. Descriptive Statistics")
+```
+
+Table: (\#tab:descrTobacco) Tobacco. Descriptive Statistics
+
+
+
+# Data frame Summaries
+
+## grid, no plain ascii
+See Table \@ref(tab:dfSummaryGrid)
+
+```{r}
+dfSummary(tobacco, style = 'grid', plain.ascii = FALSE,
+          caption = "Tobacco. Dataframe Summary")
+```
+
+Table: (\#tab:dfSummaryGrid) Tobacco. Dataframe Summary with graph
+
+
+## no graph column, no plain ascii
+See Table \@ref(tab:dfSummaryNoGraph)
+
+```{r}
+dfSummary(tobacco, style='grid', plain.ascii = FALSE, graph.col = FALSE)
+```
+
+Table: (\#tab:dfSummaryNoGraph) Dataframe Summary with no graph
+
+
+## Using by() to Show Results By Groups
+See Table \@ref(tab:usingBy)
+
+```{r}
+# First save the results
+iris_stats_by_species <- by(data = iris, 
+                            INDICES = iris$Species, 
+                            FUN = descr, stats = c("mean", "sd", "min", "med", "max"), 
+                            transpose = TRUE,
+                            caption = "Using by()")
+
+# Then use view(), like so:
+# view(iris_stats_by_species, method = "pander", style = "rmarkdown")
+view(iris_stats_by_species, method = "pander", style = "rmarkdown",
+    caption = "Using by()")
+```
+
+Table: (\#tab:usingBy) iris stats by species.
+
+
+## Special Case - Using descr() With by() For A Single Variable
+Refer to Table \@ref(tab:with-by)
+
+```{r usingBy}
+data(tobacco) # tobacco is an example dataframe included in the package
+BMI_by_age <- with(tobacco, 
+                   by(BMI, age.gr, descr, 
+                      stats = c("mean", "sd", "min", "med", "max"), 
+                      caption = "Using by()"))
+
+view(BMI_by_age, "pander", style = "rmarkdown",
+     caption = "Using by()",
+     omit.headings = TRUE)
+```
+
+Table: (\#tab:with-by) BMI by ages. Using `with()` and `by()`. Single Variable.
+
+
+### BMI_by_age is not a dataframe
+
+```{r}
+class(BMI_by_age)
+```
+
+## Transpose
+
+The transposed version looks like this:
+Refer to Table \@ref(tab:transposed)
+
+```{r}
+BMI_by_age <- with(tobacco, 
+                   by(BMI, age.gr, descr,  transpose = TRUE,
+                      stats = c("mean", "sd", "min", "med", "max")),
+                   caption = "Transposed Descriptive")
+
+view(BMI_by_age, "pander", style = "rmarkdown", omit.headings = TRUE,
+     caption = "Transposed Descriptive")
+```
+
+Table: (\#tab:transposed) BMI by ages. Single Variable, transposed.
+
+
+## Using lapply() to Show Several freq() tables at once
+Refer to Table \@ref(tab:lapplyFreqTables)
+
+```{r}
+tobacco_subset <- tobacco[ ,c("gender", "age.gr", "smoker")]
+freq_tables <- lapply(tobacco_subset, freq)
+# view(freq_tables, footnote = NA, file = 'freq-tables.html')
+view(freq_tables, method = 'pander', omit.headings = TRUE)
+```
+
+Table: (\#tab:lapplyFreqTables) Frequency Tables
+
+
+# Using by(), with(), and lapply()
+Refer to Table \@ref(tab:examsDescriptive)
+
+```{r}
+stats <- by(data = exams$geography, INDICES = exams$gender, FUN = descr, 
+            style = 'rmarkdown')
+
+view(stats, method = 'pander', omit.headings = TRUE)
+```
+
+Table: (\#tab:examsDescriptive) Descriptive Statistics for Geography class by Gender
+
+
+```{r results="markup"}
+what.is(iris)
+```
+
+

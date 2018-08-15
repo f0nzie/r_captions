@@ -1,0 +1,69 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: 
+    latex_engine: lualatex
+  html_notebook: default
+  html_document: default
+---
+
+```{r}
+
+```
+
+
+```{r bunch_o_figs, fig.height=4, fig.width=8}
+n <- 100
+x <- rnorm(n)
+par(mfrow=c(1,2), las=1)
+for(i in 1:8) {
+  y <- i*x + rnorm(n)
+  plot(x, y, main=i)
+}
+```
+For R Markdown, the default graphics device is png. You can choose a different device using the chunk option dev. For example, to use the svg device (for Scalable Vector Graphics, which may look better in a web page as they can be scaled without loss of quality), you would use dev='svg', as follows:
+
+```{r bunch_o_figs_svg, fig.height=4, fig.width=8, dev='svg'}
+n <- 100
+x <- rnorm(n)
+par(mfrow=c(1,2), las=1)
+for(i in 1:8) {
+  y <- i*x + rnorm(n)
+  plot(x, y, main=i)
+}
+```
+You can pass arguments to the graphics device using the chunk option dev.args, which takes a list. For example:
+
+```{r bunch_o_figs_pointsize, fig.height=4, fig.width=8, dev.args=list(pointsize=18)}
+n <- 100
+x <- rnorm(n)
+par(mfrow=c(1,2), las=1)
+for(i in 1:8) {
+  y <- i*x + rnorm(n)
+  plot(x, y, main=i)
+}
+```
+
+
+The chunk option dev.args=list(pointsize=18) passes pointsize=18 to the png() device. This is equivalent to, in R, using png("myfile.png", pointsize=18).
+
+# Tables
+
+I try to avoid tables; figures are almost always better. And for informal reports, I’ll often just print out a matrix or data frame, rather than create a formal table.
+## kable
+
+If you want to make a somewhat nicer table, the simplest approach is to use the kable function in the knitr package. It doesn’t have many options, but in many cases it’s sufficient. Here’s an example.
+
+```{r kable}
+n <- 100
+x <- rnorm(n)
+y <- 2*x + rnorm(n)
+out <- lm(y ~ x)
+library(knitr)
+kable(summary(out)$coef, digits=2)
+```
+
+
+
+
+

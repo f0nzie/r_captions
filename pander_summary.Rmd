@@ -1,0 +1,58 @@
+---
+title: "pander example"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE, error=TRUE, message=FALSE, warning=FALSE} 
+knitr::opts_chunk$set(echo=TRUE, 
+                      comment=NA, 
+                      error=TRUE, 
+                      warning=FALSE, 
+                      message = FALSE, 
+                      fig.align = 'center')
+```
+
+```{r}
+library(pander)
+
+data(iris)
+knitr::kable(head(iris))
+```
+
+
+```{r}
+irisSummary <- apply(iris[, 1:4], 2, function(x) tapply(x, iris$Species,
+summary))
+irisSummary <- lapply(irisSummary, do.call, what = rbind)
+
+irisSummary
+```
+
+
+Each of these can again be displayed as a nicely formatted table using kable but unfortunately information
+about the column that was summarised will be lost in the process. For some output formats kable supports
+the use of a caption option but unfortuantely this doesn’t work when producing Markdown, as is the case
+here. An alternative is to use the pander package to produce output suitable for further processing with
+pandoc.
+
+
+```{r}
+suppressPackageStartupMessages(library(pander))
+panderOptions("table.split.table", Inf) ## don't split tables
+pander(irisSummary[1:3])
+```
+
+```{r}
+for (i in 3:4) {
+set.caption(sub(".", " ", names(irisSummary)[i], fixed = TRUE))
+pander(irisSummary[[i]])
+}
+```
+
+```{r}
+pander(t.test(Sepal.Length ~ Species == "setosa", data = iris))
+```
+

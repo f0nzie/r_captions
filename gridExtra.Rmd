@@ -1,0 +1,20 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document: default
+---
+
+```{r}
+library(gridExtra)
+pdf("data_output.pdf", height=11, width=8.5)
+grid.table(mtcars)
+dev.off()
+```
+
+```{r}
+library(gridExtra); 
+maxrow = 30; npages = ceiling(nrow(iris)/maxrow); pdf("iris_pages.pdf", height=11, width=8.5); for (i in 1:npages) {idx = seq(1+((i-1)*maxrow), i*maxrow); grid.newpage(); grid.table(iris[idx, ])}; dev.off()
+```
+
