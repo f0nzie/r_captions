@@ -1,0 +1,80 @@
+---
+title: "from sclerotinia"
+author: "Alfonso R. Reyes"
+date: '`r format(Sys.time())`'
+output:
+  bookdown::pdf_document2:
+    keep_tex: yes
+    latex_engine: pdflatex
+    number_sections: no
+    toc: yes
+  bookdown::html_document2:
+    number_sections: no
+    theme: readable
+    toc: yes
+  bookdown::tufte_html2:
+    number_sections: no
+    toc: yes
+  bookdown::word_document2: null
+fontsize: 12pt
+linestretch: 1.0
+link-citations: yes
+---
+
+
+
+
+```{r load_libraries, message=FALSE}
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+
+library("poppr")
+library("tidyverse")
+```
+
+
+
+Sclerotia of *S. sclerotiorum* were collected over several years from grower fields and/or wmn in 11 states of the Australia, France, Mexico, and the United States (Table \@ref(tab:isolate-table)). 
+
+Refer to Table \@ref(tab:MCG-aggressiveness).
+
+```{r MLG-ag, echo = FALSE, warning = FALSE, message = FALSE, results = "asis"}
+# MLHagg %>% agghux
+knitr::kable(
+  mtcars[1:6, 1:6])
+```
+
+Table: (\#tab:MCG-aggressiveness) Mean aggressiveness ratings for the 10 most abundant MCG; groupings according to 95% family-wise confidence interval.
+
+
+
+```{r table3, echo = FALSE, warning = FALSE, message = FALSE, results = "asis"}
+# read_csv("../../results/tables/mlg_table.csv", 
+#          na = "NA", # spaces read in as spaces
+#          col_types = cols(.default = col_character())) %>%
+#   rename(`$P_{sex}$` = Psex) %>% 
+#   rename(MLH = MLG) %>%
+#   knitr::kable(format = "pandoc")
+
+knitr::kable(head(iris, 15))
+```
+
+Table: (\#tab:mlg-table) The five most abundant Multilocus Haplotypes (MLH) with
+the probability of second encounter ($P_{sex}$), Mycelial Compatibility Groups (MCG), and Regions with sample sizes in parentheses.
+
+
+The most abundant MLH was represented by 27 isolates (Table \@ref(tab:mlg-table)) from five Regions (NE, MI, WA, CO, and ND). 
+
+
+Nearly all populations showed evidence of linkage (Table \@ref(tab:iatab)), which serves as evidence for clonal reproduction or other forms of non-random mating. 
+
+```{r table_ia, echo = FALSE, warning = FALSE, message = FALSE, results = "asis"}
+
+knitr::kable(head(mtcars))
+```
+
+
+
+
+

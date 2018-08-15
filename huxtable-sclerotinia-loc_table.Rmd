@@ -1,0 +1,246 @@
+---
+title: "sclerotinia, loc_table"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+# manuscript.Rmd
+
+
+## locus_table
+
+```{r}
+library("tidyverse")
+
+# Locus Table -------------------------------------------------------------
+
+loc_columns <- cols(
+  Locus   = col_character(),
+  Range   = col_character(),
+  Repeats = col_double(),
+  allele  = col_integer(),
+  Hexp    = col_double(),
+  Evenness = col_double()
+)
+loc_table <- readr::read_csv("locus-table.csv", 
+                             col_types = loc_columns,
+                             col_names = TRUE)
+Amean <- mean(loc_table$allele)
+Hmean <- mean(loc_table$Hexp)
+Emean <- mean(loc_table$Evenness)
+
+head(loc_table, 10)
+```
+
+
+```{r , echo = FALSE, warning = FALSE, message = FALSE, results = "asis"}
+loc_table %>%
+    mutate(allele = round(allele, 2)) %>%
+    mutate(Repeats = case_when(
+        Locus == "5-2"   ~ "(GT)",
+        Locus == "6-2"   ~ "(TTTTTC)(TTTTTG)(TTTTTC)", # "(TTTTTC)~2~(TTTTTG)~2~(TTTTTC)",
+        Locus == "7-2"   ~ "(GA)",
+        Locus == "8-3"   ~ "(CA)",
+        Locus == "9-2"   ~ "(CA)(CT)", # "(CA)~9~(CT)~9~",
+        Locus == "12-2"  ~ "(CA)",
+        Locus == "17-3"  ~ "(TTA)",
+        Locus == "20-3"  ~ "(GT)GG(GT)", # "(GT)~7~GG(GT)~5~",
+        Locus == "55-4"  ~ "(TACA)",
+        Locus == "110-4" ~ "(TATG)",
+        Locus == "114-4" ~ "(TAGA)"
+    )) %>%
+    rename(`*h*` = Hexp) %>%
+    rename(`$E_5$` = Evenness) %>%
+    rename(`No. alleles` = allele) %>%
+    rename(`Repeat Motif` = Repeats) %>%
+    huxtable::as_huxtable(add_colnames = TRUE) %>%
+    huxtable::set_number_format(huxtable::everywhere, 3:4, 0) %>%
+    huxtable::set_number_format(huxtable::everywhere, 5:6, 2) %>%
+    huxtable::set_align(huxtable::everywhere, 2:6, "right") %>%
+    huxtable::set_col_width(c(0.06, 0.07, 0.25, 0.1, 0.05, 0.075)) %>%
+    huxtable::print_md(max_width = 100)
+```
+
+
+
+
+# manuscript.Rmd: 
+
+## gdt: Genotype Diversity Table
+
+### load table
+
+```{r}
+# Genotype Diversity Table -----------------------------------------------
+
+gdt <- read_csv("genotype_diversity_table_region.csv", 
+         na = "NA", # spaces read in as spaces
+         col_types = cols(
+         Pop = col_character(),
+         N = col_integer(),
+         MLG = col_integer(),
+         eMLG = col_double(),
+         SE = col_double(),
+         H = col_double(),
+         G = col_double(),
+         lambda = col_double(),
+         E.5 = col_double(),
+         Hexp = col_double(),
+         Ia = col_double(),
+         p.Ia = col_double(),
+         rbarD = col_double(),
+         p.rD = col_double(),
+         File = col_character()
+      ))
+gdtrd <- setNames(signif(gdt$p.rD, 3), gdt$Pop)
+
+```
+
+### huxtable: gdt
+
+```{r table_ia, echo = TRUE, warning = FALSE, message = FALSE, results = "asis"}
+gdt %>%
+  # mutate(Ia = case_when(
+  #   !is.finite(p.Ia) ~ "-",
+  #   p.Ia == 0.001 ~ paste0(round(Ia, 2), "*"),
+  #   p.Ia <= 0.01  ~ paste0(round(Ia, 2), "-"),
+  #   p.Ia <= 0.05  ~ paste0(round(Ia, 2), "~"),
+  #   TRUE          ~ as.character(round(Ia, 2))
+  # )) %>%
+  mutate(rbarD = case_when(
+    !is.finite(p.rD) ~ "-",
+    p.rD == 0.001 ~ paste0(round(rbarD, 2), "*"),
+  #   p.rD <= 0.01  ~ paste0(round(rbarD, 2), "-"),
+  #   p.rD <= 0.05  ~ paste0(round(rbarD, 2), "~"),
+    TRUE          ~ as.character(round(rbarD, 2))
+  )) %>%
+  mutate_if(is.numeric, round, digits = 2) %>%
+  mutate(N = paste(N, MLG, sep = " (") %>% paste0(")") %>% formatC()) %>%
+  mutate(eMLG = paste(eMLG, SE, sep = " (") %>%  paste0(")") %>% formatC()) %>%
+  rename(`*h*` = Hexp) %>%
+  rename(`$E_5$` = E.5) %>%
+  # rename(`$I_A$` = Ia) %>%
+  rename(`$\\lambda$` = lambda) %>%
+  rename(`$\\bar{r}_d$` = rbarD) %>%
+  rename(eMLH = eMLG) %>%
+  select(-File, -MLG, -SE, -p.Ia, -p.rD, -Ia) %>% 
+  huxtable::as_huxtable(add_colnames = TRUE) %>%
+  huxtable::set_number_format(huxtable::everywhere, 4:5, 1) %>%
+  huxtable::set_align(huxtable::everywhere, -1, "right") %>%
+  huxtable::set_col_width(c(1.1, 0.9, 1.3, 0.5, 0.5, 1.1, 0.7, 0.6, 0.7)) %>%
+  huxtable::print_md(max_width = 80)
+```
+
+
+# by-year.Rmd: sclerotinia_16_loci
+
+## ranges
+
+```{r message=FALSE, warning=FALSE}
+library("tidyverse")
+library("poppr")
+
+load("sclerotinia_16_loci.rda")
+```
+
+```{r locus_table, comment = NA, results='asis'}
+makerange <- . %>% as.integer() %>% range() %>% paste(collapse = "--")
+
+ranges <- map_chr(alleles(dat11), makerange)
+# ranges <- c(ranges, alleles(dat11) %>% unlist(use.names = FALSE) %>% makerange)
+locus_table(dat11, information = FALSE) %>% 
+  as.data.frame() %>%
+  rownames_to_column("Locus") %>%
+  slice(-n()) %>%
+  mutate(Locus = gsub("\\([FH]\\)", "", Locus)) %>%
+  add_column(Range = ranges) %>%
+  add_column(Repeats = other(dat11)$REPLEN[locNames(dat11)]) %>%
+  select(Locus, Range, Repeats, allele, Hexp, Evenness) %>%
+  # readr::write_csv(file.path(PROJHOME, "results/tables/locus-table.csv"), 
+    # col_names = TRUE) %>%
+  mutate(allele = round(allele, 2)) %>%
+  mutate(Repeats = case_when(
+    Repeats <= 2 ~ "di-",
+    Repeats <= 3 ~ "tri-",
+    Repeats <= 4 ~ "tetra-",
+    Repeats <= 5 ~ "penta-",
+    Repeats <= 6 ~ "hexa-"
+  )) %>%
+  rename(`*h*` = Hexp) %>%
+  rename(`No. alleles` = allele) %>%
+  rename(`Repeat Motif` = Repeats) %>%
+  huxtable::as_huxtable(add_colnames = TRUE) %>%
+  huxtable::set_number_format(huxtable::everywhere, 3:4, 0) %>%
+  huxtable::set_number_format(huxtable::everywhere, 5:6, 2) %>%
+  huxtable::set_align(huxtable::everywhere, 2:6, "right") %>%
+  huxtable::set_col_width(c(0.06, 0.07, 0.11, 0.1, 0.05, 0.075)) %>%
+  huxtable::print_md(max_width = 61)
+```
+
+
+# pop-diff.Rmd: ptab
+
+```{r load_packages, warning = FALSE, message = FALSE}
+library('tidyverse')
+library('poppr')
+
+load("sclerotinia_16_loci.rda")
+
+setPop(dat11) <- ~Host/Source/Region/Year
+dat11cc <- clonecorrect(dat11, ~Host/Source/Region/Year, keep = 1:4)
+dat11cc
+
+```
+
+```{r}
+set.seed(2017-08-02)
+ptab <- dat11cc %>% 
+    setPop(~Region) %>% 
+    poppr(sample = 999, total = FALSE)
+```
+
+
+```{r geno-div2, fig.width = 10, fig.height = 10, comment = NA, results='asis'}
+ptab %>%
+  arrange(desc(N), desc(MLG)) %>%
+  # write_csv(file.path(PROJHOME, "results/tables/genotype_diversity_table_region.csv"), col_names = TRUE) %>%
+  mutate(Ia = case_when(
+    !is.finite(p.Ia) ~ "-",
+    p.Ia == 0.001 ~ paste0(round(Ia, 2), "*"),
+    p.Ia <= 0.01  ~ paste0(round(Ia, 2), "-"),
+    p.Ia <= 0.05  ~ paste0(round(Ia, 2), "~"),
+    TRUE          ~ as.character(round(Ia, 2))
+  )) %>%
+  mutate(rbarD = case_when(
+    !is.finite(p.rD) ~ "-",
+    p.rD == 0.001 ~ paste0(round(rbarD, 2), "*"),
+    p.rD <= 0.01  ~ paste0(round(rbarD, 2), "-"),
+    p.rD <= 0.05  ~ paste0(round(rbarD, 2), "~"),
+    TRUE          ~ as.character(round(rbarD, 2))
+  )) %>%
+  mutate_if(is.numeric, round, digits = 2) %>%
+  mutate(N = paste(N, MLG, sep = " (") %>% paste0(")") %>% formatC()) %>%
+  mutate(eMLG = paste(eMLG, SE, sep = " (") %>%  paste0(")") %>% formatC()) %>%
+  rename(`*h*` = Hexp) %>%
+  rename(`$E_5$` = E.5) %>%
+  rename(`$I_A$` = Ia) %>%
+  rename(`$\\lambda$` = lambda) %>%
+  rename(`$\\bar{r}_d$` = rbarD) %>%
+  select(-File, -MLG, -SE, -p.rD, -p.Ia)  %>% 
+  huxtable::as_huxtable(add_colnames = TRUE) %>%
+  huxtable::set_number_format(huxtable::everywhere, 4:5, 1) %>%
+  huxtable::set_align(huxtable::everywhere, -1, "right") %>%
+  huxtable::set_col_width(c(1.1, 0.9, 1.3, 0.5, 0.5, 1.2, 0.7, 0.6, 0.6, 0.8)) %>%
+  huxtable::print_md(max_width = 80)
+
+
+
+# mtab <- mlg.table(dat11, ~Region, background = TRUE)
+```
+
+
+
+
+
+
