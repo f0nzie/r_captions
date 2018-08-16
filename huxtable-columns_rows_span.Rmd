@@ -1,7 +1,8 @@
 ---
 title: "huxtable, columns and rows span"
 output:
-  pdf_document: default
+  bookdown::pdf_document2:
+    latex_engine: pdflatex
   html_notebook: default
 ---
 
@@ -10,7 +11,15 @@ library(huxtable)
 library(dplyr)
 ```
 
-```{r}
+
+# Column and row spans
+Sometimes you want a single cell to spread over more than one row or column: for example, if you want a heading that covers several different rows. You can do this using the colspan and rowspan properties. If you know HTML tables, then these will be familiar to you. colspan sets how many columns the cell covers, and rowspan sets how many rows the cell covers. Here, we’ll add some row and column headings to the mtcars dataset:
+
+See Table \@ref(tab:colRowSpan)
+
+See Table \@ref(colRowSpan)
+
+```{r colRowSpan}
 data(mtcars)
 car_ht <- as_hux(mtcars)
 
@@ -28,15 +37,8 @@ cars_mpg <- cars_mpg                          %>%
       set_caption('cars table')
 
 cars_mpg <- cbind(cylinders = cars_mpg$cyl, cars_mpg)
-cars_mpg
-```
+# cars_mpg
 
-
-
-# Column and row spans
-Sometimes you want a single cell to spread over more than one row or column: for example, if you want a heading that covers several different rows. You can do this using the colspan and rowspan properties. If you know HTML tables, then these will be familiar to you. colspan sets how many columns the cell covers, and rowspan sets how many rows the cell covers. Here, we’ll add some row and column headings to the mtcars dataset:
-
-```{r}
 cars_mpg$cylinders[1]   <- ""
 cars_mpg$cylinders[2]   <- "Four cylinders"
 cars_mpg$cylinders[13]  <- "Six cylinders"
@@ -62,3 +64,178 @@ bold(cars_mpg)[, 1] <- TRUE
 if (knitr::is_latex_output()) font_size(cars_mpg) <- 10
 cars_mpg
 ```
+
+
+# another way of printing. Second
+
+See Table \@ref(tab:colRowSpan2)
+
+
+```{r colRowSpan2, echo=FALSE}
+data(mtcars)
+car_ht <- as_hux(mtcars)
+
+# Select columns by name:
+cars_mpg <- car_ht[, c("mpg", "cyl", "am")] 
+
+# Order by number of cylinders:
+cars_mpg <- cars_mpg[order(cars_mpg$cyl),]
+
+cars_mpg <- cars_mpg                          %>% 
+      huxtable::add_rownames(colname = "Car") %>% 
+      huxtable::add_colnames()                %>%
+      set_right_border(0.4)                   %>% 
+      set_right_border_color("grey") %>% 
+      set_caption('cars table')
+
+cars_mpg <- cbind(cylinders = cars_mpg$cyl, cars_mpg)
+# cars_mpg
+
+cars_mpg$cylinders[1]   <- ""
+cars_mpg$cylinders[2]   <- "Four cylinders"
+cars_mpg$cylinders[13]  <- "Six cylinders"
+cars_mpg$cylinders[20]  <- "Eight cylinders"
+
+rowspan(cars_mpg)[2, 1]  <- 11
+rowspan(cars_mpg)[13, 1] <- 7
+rowspan(cars_mpg)[20, 1] <- 14
+
+cars_mpg <- rbind(c("List of cars", "", "", "", ""), cars_mpg)
+colspan(cars_mpg)[1, 1] <- 5
+align(cars_mpg)[1, 1] <- "center"
+
+# a little more formatting:
+
+cars_mpg <- set_all_padding(cars_mpg, 2)
+cars_mpg <- set_all_borders(cars_mpg, 1)
+valign(cars_mpg)[1,] <- "top"
+col_width(cars_mpg) <- c(.4 , .3 , .1, .1, .1)
+number_format(cars_mpg)[, 4:5] <- 0
+bold(cars_mpg)[1:2, ] <- TRUE
+bold(cars_mpg)[, 1] <- TRUE
+if (knitr::is_latex_output()) font_size(cars_mpg) <- 10
+cars_mpg
+```
+
+Table: (\#tab:colRowSpan2) Summary of _Categorical_ variables for the original dataset.
+
+
+# another way of printing. Third
+
+See Table \@ref(colRowSpan3)
+
+
+```{r colRowSpan3, echo=FALSE}
+data(mtcars)
+car_ht <- as_hux(mtcars)
+
+# Select columns by name:
+cars_mpg <- car_ht[, c("mpg", "cyl", "am")] 
+
+# Order by number of cylinders:
+cars_mpg <- cars_mpg[order(cars_mpg$cyl),]
+
+cars_mpg <- cars_mpg                          %>% 
+      huxtable::add_rownames(colname = "Car") %>% 
+      huxtable::add_colnames()                %>%
+      set_right_border(0.4)                   %>% 
+      set_right_border_color("grey") # %>% 
+      # set_caption('cars table')
+
+cars_mpg <- cbind(cylinders = cars_mpg$cyl, cars_mpg)
+# cars_mpg
+
+cars_mpg$cylinders[1]   <- ""
+cars_mpg$cylinders[2]   <- "Four cylinders"
+cars_mpg$cylinders[13]  <- "Six cylinders"
+cars_mpg$cylinders[20]  <- "Eight cylinders"
+
+rowspan(cars_mpg)[2, 1]  <- 11
+rowspan(cars_mpg)[13, 1] <- 7
+rowspan(cars_mpg)[20, 1] <- 14
+
+cars_mpg <- rbind(c("List of cars", "", "", "", ""), cars_mpg)
+colspan(cars_mpg)[1, 1] <- 5
+align(cars_mpg)[1, 1] <- "center"
+
+# a little more formatting:
+
+cars_mpg <- set_all_padding(cars_mpg, 2)
+cars_mpg <- set_all_borders(cars_mpg, 1)
+valign(cars_mpg)[1,] <- "top"
+col_width(cars_mpg) <- c(.4 , .3 , .1, .1, .1)
+number_format(cars_mpg)[, 4:5] <- 0
+bold(cars_mpg)[1:2, ] <- TRUE
+bold(cars_mpg)[, 1] <- TRUE
+if (knitr::is_latex_output()) font_size(cars_mpg) <- 10
+cars_mpg
+```
+
+Table: (\#colRowSpan3) Summary of _Categorical_ variables for the original dataset.
+
+
+
+
+
+
+(ref:colRowSpan4) Categorical variables summary.
+
+```{r colRowSpan4, echo=FALSE}
+data(mtcars)
+car_ht <- as_hux(mtcars)
+
+# Select columns by name:
+cars_mpg <- car_ht[, c("mpg", "cyl", "am")] 
+
+# Order by number of cylinders:
+cars_mpg <- cars_mpg[order(cars_mpg$cyl),]
+
+cars_mpg <- cars_mpg                          %>% 
+      huxtable::add_rownames(colname = "Car") %>% 
+      huxtable::add_colnames()                %>%
+      set_right_border(0.4)                   %>% 
+      set_right_border_color("grey") %>% 
+      set_caption('(ref:colRowSpan4) ')
+
+cars_mpg <- cbind(cylinders = cars_mpg$cyl, cars_mpg)
+# cars_mpg
+
+cars_mpg$cylinders[1]   <- ""
+cars_mpg$cylinders[2]   <- "Four cylinders"
+cars_mpg$cylinders[13]  <- "Six cylinders"
+cars_mpg$cylinders[20]  <- "Eight cylinders"
+
+rowspan(cars_mpg)[2, 1]  <- 11
+rowspan(cars_mpg)[13, 1] <- 7
+rowspan(cars_mpg)[20, 1] <- 14
+
+cars_mpg <- rbind(c("List of cars", "", "", "", ""), cars_mpg)
+colspan(cars_mpg)[1, 1] <- 5
+align(cars_mpg)[1, 1] <- "center"
+
+# a little more formatting:
+
+cars_mpg <- set_all_padding(cars_mpg, 2)
+cars_mpg <- set_all_borders(cars_mpg, 1)
+valign(cars_mpg)[1,] <- "top"
+col_width(cars_mpg) <- c(.4 , .3 , .1, .1, .1)
+number_format(cars_mpg)[, 4:5] <- 0
+bold(cars_mpg)[1:2, ] <- TRUE
+bold(cars_mpg)[, 1] <- TRUE
+if (knitr::is_latex_output()) font_size(cars_mpg) <- 10
+cars_mpg
+
+# Table: (\#tab:colRowSpan4) Summary of _Categorical_ variables for the original dataset.
+```
+
+
+
+# another way of printing. Fourth
+
+See Table \@ref(tab:colRowSpan4)
+
+See Table \@ref(colRowSpan4)
+
+See Table \#ref(colRowSpan4)
+
+See Table \#ref(tab:colRowSpan4)
